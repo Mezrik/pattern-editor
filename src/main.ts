@@ -1,23 +1,34 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import { setupCounter } from './counter'
+import Picture from "./core/Picture";
+import ConcreteColor from "./core/Color";
+import Editor from "./core/Editor";
+import { EditorState } from "./types/state";
+import draw from "./tools/draw";
+import fill from "./tools/fill";
+import picker from "./tools/picker";
+import rectangle from "./tools/rectangle";
+import ToolSelect from "./controls/ToolSelect";
+import ColorSelect from "./controls/ColorSelect";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+let state: EditorState = {
+  tool: "draw",
+  color: "#000000",
+  picture: Picture.fill(60, 30, new ConcreteColor("#f0f0f0")),
+};
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+function updateState(state: EditorState, action: Partial<EditorState>) {
+  return Object.assign({}, state, action);
+}
+
+let app = new Editor(
+  {
+    tools: { draw, fill, rectangle, picker },
+    controls: [ToolSelect, ColorSelect],
+    dispatch(action: Partial<EditorState>) {
+      state = updateState(state, action);
+      app.syncState(state);
+    },
+  },
+  state
+);
+
+document.querySelector<HTMLDivElement>("#app")?.append(app.dom);
